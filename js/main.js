@@ -44,6 +44,7 @@
     burger.setAttribute('aria-expanded', String(open));
     mobileMenu.setAttribute('aria-hidden', String(!open));
     document.body.style.overflow = open ? 'hidden' : '';
+    document.body.classList.toggle('menu-open', open);
   });
   mobileMenu.querySelectorAll('.mobile-menu__link').forEach(function (link) {
     link.addEventListener('click', function () {
@@ -52,6 +53,7 @@
       burger.setAttribute('aria-expanded', 'false');
       mobileMenu.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
     });
   });
 
