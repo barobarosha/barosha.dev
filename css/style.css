@@ -1052,7 +1052,7 @@ body.menu-open .logo__sup { color: var(--bg); }
 }
 
 /* ---------- Reveal-анимации (начальное состояние) ---------- */
-[data-reveal] { opacity: 0; transform: translateY(36px); }
+[data-reveal] { opacity: 0; transform: translateY(20px); }
 .no-js [data-reveal], .reduced-motion [data-reveal] { opacity: 1; transform: none; }
 
 /* ---------- Адаптив ---------- */

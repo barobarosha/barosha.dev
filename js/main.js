@@ -168,21 +168,23 @@
     });
 
     // Все data-reveal
+    ScrollTrigger.config({ ignoreMobileResize: true });
     document.querySelectorAll('[data-reveal]').forEach(function (el) {
       gsap.to(el, {
         opacity: 1, y: 0,
-        duration: 0.9,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 88%' }
+        duration: 0.6,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 98%', once: true }
       });
     });
+    window.addEventListener('load', function () { ScrollTrigger.refresh(); });
 
     // Карточки проектов: сборка при скролле
     gsap.utils.toArray('.project-card').forEach(function (card, i) {
       gsap.from(card, {
         opacity: 0, y: 70, rotateZ: i % 2 ? 1.5 : -1.5,
         duration: 1, ease: 'power3.out',
-        scrollTrigger: { trigger: card, start: 'top 90%' }
+        scrollTrigger: { trigger: card, start: 'top 98%', once: true }
       });
     });
 
