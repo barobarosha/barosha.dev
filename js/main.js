@@ -258,60 +258,7 @@
     });
   });
 
-  /* ---------- Бегущая строка: скролл-драйв на тач-устройствах ---------- */
-  (function () {
-    const marquee = document.querySelector('.marquee');
-    if (!marquee || prefersReduced) return;
-    const track = marquee.querySelector('.marquee__track');
-
-    let half = 0;
-    function measure() { half = track.scrollWidth / 2; }
-    let offset = 0;
-    let velocity = 0;
-    let lastY = window.scrollY;
-
-    function apply() {
-      offset = ((offset % half) + half) % half;  // зацикливание
-      track.style.transform = 'translate3d(' + (-offset) + 'px, 0, 0)';
-    }
-
-    function onScroll() {
-      const y = window.scrollY;
-      const dy = y - lastY;
-      lastY = y;
-      velocity += dy * 0.35;
-      offset -= dy * 0.6;   // мгновенная реакция, без ожидания rAF
-      apply();
-    }
-
-    function tick() {
-      velocity *= 0.94;              // плавное затухание
-      if (Math.abs(velocity) < 0.01) velocity = 0;
-      offset -= velocity;
-      apply();
-      requestAnimationFrame(tick);
-    }
-
-    function activateScrollMode() {
-      if (marquee.classList.contains('marquee--scroll')) return;
-      marquee.classList.add('marquee--scroll');
-      measure();
-      window.addEventListener('resize', measure, { passive: true });
-      window.addEventListener('scroll', onScroll, { passive: true });
-      requestAnimationFrame(tick);
-    }
-
-    if (isTouch) {
-      activateScrollMode();
-    } else {
-      // Десктоп: авто-анимация. Но если через 2с CSS-анимация так и не
-      // пошла (на некоторых браузерах бывает) — включаем скролл-режим.
-      const before = track.getBoundingClientRect().x;
-      setTimeout(function () {
-        if (track.getBoundingClientRect().x === before) activateScrollMode();
-      }, 2000);
-    }
-  })();
+  /* ---------- Бегущая строка: статичная по решению владельца ---------- */
 
   /* ---------- Форма обратной связи → Telegram ---------- */
   const form = document.getElementById('contactForm');

@@ -404,8 +404,31 @@ body.menu-open .logo__sup { color: var(--bg); }
   animation: marquee 26s linear infinite;
   will-change: transform;
 }
-/* На тач-устройствах авто-анимация выключена — строка едет при скролле (см. main.js) */
-.marquee--scroll .marquee__track { animation: none; }
+
+/* Статичная строка — только мобилка (тач) */
+.marquee--static { display: none; }
+.marquee__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  column-gap: 18px;
+  padding: 0 20px;
+}
+.marquee__row span {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.marquee__row i { color: var(--red); font-style: normal; font-size: 14px; }
+@media (hover: none), (pointer: coarse) {
+  .marquee:not(.marquee--static) { display: none; }
+  .marquee--static { display: block; }
+}
 .marquee__track span {
   font-family: var(--font-display);
   font-weight: 700;
