@@ -402,7 +402,10 @@ body.menu-open .logo__sup { color: var(--bg); }
   gap: 34px;
   width: max-content;
   animation: marquee 26s linear infinite;
+  will-change: transform;
 }
+/* На тач-устройствах авто-анимация выключена — строка едет при скролле (см. main.js) */
+.marquee--scroll .marquee__track { animation: none; }
 .marquee__track span {
   font-family: var(--font-display);
   font-weight: 700;
@@ -678,6 +681,24 @@ body.menu-open .logo__sup { color: var(--bg); }
   transform: translateZ(30px);
 }
 .project-card__link:hover .project-card__arrow { background: var(--red); color: var(--white); transform: translateZ(30px) rotate(45deg); }
+
+/* Статичная карточка проекта (без ссылки) */
+.project-card__link--static { cursor: default; }
+
+/* Заполненный отзыв */
+.review-card--filled {
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-style: solid;
+  box-shadow: 0 24px 50px -30px rgba(23, 19, 14, .25);
+}
+.review-card--filled:hover { border-color: var(--red); }
+.review-card__avatar--filled {
+  background: var(--red);
+  color: var(--white);
+}
+.review-card--filled blockquote { color: var(--ink); }
+.review-card--filled figcaption { color: var(--ink-60); }
 
 /* Концепт-карточка */
 .project-card__concept {
