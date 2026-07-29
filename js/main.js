@@ -270,18 +270,25 @@
     let velocity = 0;
     let lastY = window.scrollY;
 
+    function apply() {
+      offset = ((offset % half) + half) % half;  // зацикливание
+      track.style.transform = 'translate3d(' + (-offset) + 'px, 0, 0)';
+    }
+
     function onScroll() {
       const y = window.scrollY;
-      velocity += (y - lastY) * 0.35;
+      const dy = y - lastY;
       lastY = y;
+      velocity += dy * 0.35;
+      offset -= dy * 0.6;   // мгновенная реакция, без ожидания rAF
+      apply();
     }
 
     function tick() {
       velocity *= 0.94;              // плавное затухание
       if (Math.abs(velocity) < 0.01) velocity = 0;
       offset -= velocity;
-      offset = ((offset % half) + half) % half;  // зацикливание
-      track.style.transform = 'translate3d(' + (-offset) + 'px, 0, 0)';
+      apply();
       requestAnimationFrame(tick);
     }
 
