@@ -542,6 +542,7 @@ body.menu-open .logo__sup { color: var(--bg); }
 .service-card--red .service-card__tag { background: rgba(255,255,255,.16); color: var(--white); }
 .service-card--red p { color: rgba(255, 253, 248, .82); }
 .service-card--wide { grid-column: span 2; }
+.service-card--full { grid-column: 1 / -1; }
 .service-card__num {
   font-family: var(--font-display);
   font-size: 13px;
