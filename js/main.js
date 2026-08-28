@@ -232,7 +232,6 @@
 
       projectCards.forEach(function (card) {
         const cat = card.dataset.cat;
-        // CTA-карточку показываем всегда
         const show = filter === 'all' || cat === filter || cat === 'all';
         if (show) {
           if (card.classList.contains('is-hidden')) {
@@ -260,25 +259,23 @@
     });
   });
 
-  /* ---------- Бегущая строка: статичная по решению владельца ---------- */
-
-  /* ---------- Форма обратной связи → Telegram ---------- */
+  /* ---------- Форма обратной связи → submit.php ---------- */
   const form = document.getElementById('contactForm');
+  if (!form) return; // форма может быть отключена
+
   const formNote = document.getElementById('formNote');
   const submitBtn = document.getElementById('formSubmit');
-  const submitBtnText = submitBtn.textContent;
-
-  function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  const submitBtnText = submitBtn ? submitBtn.textContent : '';
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+
+    // Валидация
     let valid = true;
     form.querySelectorAll('[required]').forEach(function (field) {
       if (field.type === 'checkbox') {
         const consentWrap = document.getElementById('consentWrap');
-        consentWrap.classList.toggle('has-error', !field.checked);
+        if (consentWrap) consentWrap.classList.toggle('has-error', !field.checked);
         if (!field.checked) valid = false;
       } else {
         const wrap = field.closest('.contact-form__field');
@@ -287,74 +284,70 @@
         if (empty) valid = false;
       }
     });
+
     if (!valid) {
-      formNote.textContent = 'заполните все поля и отметьте согласие — и смело отправляйте';
-      formNote.classList.remove('is-success');
+      if (formNote) {
+        formNote.textContent = 'заполните все поля и отметьте согласие — и смело отправляйте';
+        formNote.classList.remove('is-success');
+      }
       return;
     }
 
-    const cfg = window.FORM_CONFIG || {};
     const name = form.name.value.trim();
     const contact = form.contact.value.trim();
     const message = form.message.value.trim();
 
-    // Бот ещё не настроен — подсказываем
-    if (!cfg.TELEGRAM_BOT_TOKEN || !cfg.TELEGRAM_CHAT_ID) {
-      formNote.innerHTML = 'форма ждёт настройки: вставьте токен бота в js/config.js ' +
-        '(инструкция внутри файла) или напишите напрямую — ' +
-        '<a href="https://t.me/barobarosha" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">@barobarosha</a>';
-      formNote.classList.remove('is-success');
-      return;
+    // Отправляем на submit.php
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'отправляю…';
     }
+    if (formNote) formNote.classList.remove('is-success');
 
-    const text =
-      '<b>Новая заявка с сайта</b>\n\n' +
-      '<b>Имя:</b> ' + escapeHtml(name) + '\n' +
-      '<b>Контакт:</b> ' + escapeHtml(contact) + '\n' +
-      '<b>О проекте:</b>\n' + escapeHtml(message);
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'отправляю…';
-    formNote.classList.remove('is-success');
-
-    fetch('https://api.telegram.org/bot' + cfg.TELEGRAM_BOT_TOKEN + '/sendMessage', {
+    fetch('api/submit.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: cfg.TELEGRAM_CHAT_ID,
-        text: text,
-        parse_mode: 'HTML'
-      })
+      body: JSON.stringify({ name: name, contact: contact, message: message })
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.ok) {
-          formNote.textContent = 'спасибо! заявка улетела в Telegram — отвечу в течение дня';
-          formNote.classList.add('is-success');
+          if (formNote) {
+            formNote.textContent = data.message || 'спасибо! заявка сохранена — свяжусь с вами в течение дня';
+            formNote.classList.add('is-success');
+          }
           form.reset();
           if (hasGsap && !prefersReduced) {
             gsap.fromTo(form, { scale: 1 }, { scale: 1.015, duration: 0.14, yoyo: true, repeat: 1, ease: 'power2.inOut' });
           }
         } else {
-          throw new Error(data.description || 'telegram error');
+          throw new Error(data.error || 'server error');
         }
       })
       .catch(function () {
-        formNote.innerHTML = 'не получилось отправить — напишите мне напрямую: ' +
-          '<a href="https://t.me/barobarosha" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">@barobarosha</a>';
-        formNote.classList.remove('is-success');
+        if (formNote) {
+          formNote.innerHTML = 'не получилось отправить — напишите мне напрямую: ' +
+            '<a href="https://t.me/barobarosha" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">@barobarosha</a>';
+          formNote.classList.remove('is-success');
+        }
       })
       .finally(function () {
-        submitBtn.disabled = false;
-        submitBtn.textContent = submitBtnText;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitBtnText;
+        }
       });
   });
+
+  // Сброс ошибок при вводе
   form.querySelectorAll('[required]').forEach(function (field) {
     field.addEventListener('input', function () {
       if (field.type === 'checkbox') {
-        document.getElementById('consentWrap').classList.remove('has-error');
+        const consentWrap = document.getElementById('consentWrap');
+        if (consentWrap) consentWrap.classList.remove('has-error');
       } else {
-        field.closest('.contact-form__field').classList.remove('has-error');
+        const wrap = field.closest('.contact-form__field');
+        if (wrap) wrap.classList.remove('has-error');
       }
     });
   });

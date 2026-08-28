@@ -1,6 +1,3 @@
-window.FORM_CONFIG = {
-  TELEGRAM_BOT_TOKEN: '8894075356:AAHZciAG5M7_-di00i5PsnQqzciR8xZrVwM',  
-  TELEGRAM_CHAT_ID: '152070233'      
-};
-
-
+// Конфигурация формы больше не используется.
+// Данные отправляются напрямую на submit.php (api/submit.php).
+// Этот файл можно удалить или оставить пустым.
