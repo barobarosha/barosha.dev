@@ -728,6 +728,7 @@ body.menu-open .logo__sup { color: var(--bg); }
 
 /* Концепт-карточка */
 .project-card__concept {
+  position: relative;
   aspect-ratio: 16 / 10.5;
   background: var(--red);
   color: var(--white);
@@ -737,7 +738,10 @@ body.menu-open .logo__sup { color: var(--bg); }
   align-items: center;
   gap: 12px;
   overflow: hidden;
+  padding: 24px;
 }
+.project-card--concept .project-card__overlay { padding: 24px; }
+.project-card--concept .project-card__overlay p { max-width: 100%; }
 .project-card__concept-word {
   font-family: var(--font-display);
   font-weight: 900;
