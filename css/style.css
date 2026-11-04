@@ -874,6 +874,65 @@ body.menu-open .logo__sup { color: var(--bg); }
   color: var(--ink-30);
 }
 
+/* Карточка «оставить отзыв» */
+.review-card--leave { cursor: pointer; }
+.review-card--leave:hover { border-style: solid; border-color: var(--red); background: var(--white); }
+.review-card--leave:hover .review-card__avatar--plus { background: var(--red); color: var(--white); transform: rotate(90deg); }
+.review-card--leave:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+.review-card__avatar--plus {
+  border: 1.5px dashed var(--ink-30);
+  background: transparent;
+  font-size: 30px;
+  font-weight: 400;
+  transition: background .3s, color .3s, transform .4s var(--ease-out);
+}
+
+/* Форма отзыва */
+.review-form {
+  margin-top: 28px;
+  padding: 34px 32px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.review-form[hidden] { display: none; }
+.review-form__title {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 900;
+  letter-spacing: -.02em;
+  text-transform: lowercase;
+}
+.review-form__title em { font-style: normal; color: var(--red); }
+.review-form__note { font-size: 14px; color: var(--ink-60); margin-top: -10px; }
+.review-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.review-form__actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+
+/* Светлая тема для полей внутри формы отзыва */
+.review-form .contact-form__field input,
+.review-form .contact-form__field textarea {
+  background: var(--bg);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.review-form .contact-form__field input::placeholder,
+.review-form .contact-form__field textarea::placeholder { color: var(--ink-30); }
+.review-form .contact-form__consent { color: var(--ink-60); }
+.review-form .contact-form__consent input { border-color: var(--ink-30); }
+.review-form .contact-form__consent input:checked { background: var(--red); border-color: var(--red); }
+.review-form .contact-form__consent a { color: var(--red); }
+.review-form .contact-form__consent a:hover { color: var(--ink); }
+.review-form .contact-form__consent.has-error { color: var(--red); }
+.review-form .contact-form__field label { color: var(--ink-60) !important; }
+
+@media (max-width: 620px) {
+  .review-form { padding: 24px 20px; }
+  .review-form__row { grid-template-columns: 1fr; }
+}
+
 /* ---------- Контакты ---------- */
 .contacts { max-width: none; padding-left: 0; padding-right: 0; }
 .contacts__inner {
