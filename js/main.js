@@ -353,3 +353,161 @@
   });
 
 })();
+
+/* =====================================================
+   ОТЗЫВЫ: загрузка одобренных + форма «оставить отзыв»
+   ===================================================== */
+(function () {
+  'use strict';
+
+  var grid = document.getElementById('reviewsGrid');
+  var leaveCard = document.getElementById('leaveReview');
+  var reviewForm = document.getElementById('reviewForm');
+  var hasGsapR = typeof gsap !== 'undefined';
+  var prefersReducedR = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function initials(name) {
+    var parts = name.trim().split(/\s+/);
+    var ch = parts.map(function (p) { return p.charAt(0); }).join('').slice(0, 2);
+    return ch ? ch.toUpperCase() : '★';
+  }
+
+  /* ---------- Загрузка одобренных отзывов из БД ---------- */
+  if (grid) {
+    fetch('api/reviews.php')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.ok || !Array.isArray(data.reviews)) return;
+        var existing = Array.prototype.slice.call(
+          grid.querySelectorAll('.review-card--filled figcaption')
+        ).map(function (el) { return el.textContent.trim().toLowerCase(); });
+
+        data.reviews.forEach(function (r) {
+          var caption = (r.name + ' · ' + r.project).toLowerCase();
+          if (existing.indexOf(caption) !== -1) return; // не дублируем статичную карточку
+          var fig = document.createElement('figure');
+          fig.className = 'review-card review-card--filled';
+          fig.innerHTML =
+            '<div class="review-card__avatar review-card__avatar--filled" aria-hidden="true">' + esc(initials(r.name)) + '</div>' +
+            '<blockquote>' + esc(r.text) + '</blockquote>' +
+            '<figcaption>' + esc(r.name) + ' · ' + esc(r.project) + '</figcaption>';
+          grid.insertBefore(fig, leaveCard);
+        });
+      })
+      .catch(function () { /* статичные карточки остаются */ });
+  }
+
+  if (!leaveCard || !reviewForm) return;
+
+  var reviewNote = document.getElementById('reviewNote');
+  var reviewSubmit = document.getElementById('reviewSubmit');
+  var reviewCancel = document.getElementById('reviewCancel');
+  var reviewSubmitText = reviewSubmit ? reviewSubmit.textContent : '';
+
+  function openForm() {
+    if (!reviewForm.hidden) return;
+    reviewForm.hidden = false;
+    if (hasGsapR && !prefersReducedR) {
+      gsap.fromTo(reviewForm, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' });
+    }
+    var y = reviewForm.getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({ top: y, behavior: prefersReducedR ? 'auto' : 'smooth' });
+    var first = reviewForm.querySelector('input');
+    if (first) setTimeout(function () { first.focus(); }, prefersReducedR ? 0 : 400);
+  }
+
+  function closeForm() {
+    reviewForm.hidden = true;
+    reviewForm.reset();
+    if (reviewNote) { reviewNote.textContent = ''; reviewNote.classList.remove('is-success'); }
+  }
+
+  leaveCard.addEventListener('click', openForm);
+  leaveCard.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openForm(); }
+  });
+  if (reviewCancel) reviewCancel.addEventListener('click', closeForm);
+
+  reviewForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var valid = true;
+    reviewForm.querySelectorAll('[required]').forEach(function (field) {
+      if (field.type === 'checkbox') {
+        var cw = document.getElementById('reviewConsentWrap');
+        if (cw) cw.classList.toggle('has-error', !field.checked);
+        if (!field.checked) valid = false;
+      } else {
+        var wrap = field.closest('.contact-form__field');
+        var empty = !field.value.trim();
+        if (wrap) wrap.classList.toggle('has-error', empty);
+        if (empty) valid = false;
+      }
+    });
+
+    if (!valid) {
+      if (reviewNote) {
+        reviewNote.textContent = 'заполните все поля и отметьте согласие';
+        reviewNote.classList.remove('is-success');
+      }
+      return;
+    }
+
+    if (reviewSubmit) { reviewSubmit.disabled = true; reviewSubmit.textContent = 'отправляю…'; }
+    if (reviewNote) reviewNote.classList.remove('is-success');
+
+    fetch('api/review-submit.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: reviewForm.name.value.trim(),
+        project: reviewForm.project.value.trim(),
+        text: reviewForm.text.value.trim()
+      })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          if (reviewNote) {
+            reviewNote.textContent = data.message || 'спасибо! отзыв появится на сайте после проверки';
+            reviewNote.classList.add('is-success');
+          }
+          reviewForm.reset();
+          if (hasGsapR && !prefersReducedR) {
+            gsap.fromTo(reviewForm, { scale: 1 }, { scale: 1.015, duration: 0.14, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+          }
+        } else {
+          throw new Error(data.error || 'server error');
+        }
+      })
+      .catch(function () {
+        if (reviewNote) {
+          reviewNote.innerHTML = 'не получилось отправить — напишите мне напрямую: ' +
+            '<a href="https://t.me/barobarosha" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">@barobarosha</a>';
+          reviewNote.classList.remove('is-success');
+        }
+      })
+      .finally(function () {
+        if (reviewSubmit) { reviewSubmit.disabled = false; reviewSubmit.textContent = reviewSubmitText; }
+      });
+  });
+
+  reviewForm.querySelectorAll('[required]').forEach(function (field) {
+    field.addEventListener('input', function () {
+      if (field.type === 'checkbox') {
+        var cw = document.getElementById('reviewConsentWrap');
+        if (cw) cw.classList.remove('has-error');
+      } else {
+        var wrap = field.closest('.contact-form__field');
+        if (wrap) wrap.classList.remove('has-error');
+      }
+    });
+  });
+
+})();
